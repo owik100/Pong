@@ -1,3 +1,9 @@
+var loosePlayer=false;
+var looseComputer=false;
+
+var playerP=0;
+var computerP=0;
+
 var ball = {
     
     xPosition : 200,
@@ -18,30 +24,34 @@ var ball = {
     
     bounce : function()
     {
-         if(this.yPosition>height || this.yPosition<0) //Odbicie od góry i dołu
+         if(this.yPosition>=height || this.yPosition<=0) //Odbicie od góry i dołu
             {
               this.ySpeed*=-1;
             }
         
-        if(this.xPosition>width) //Punkt dla gracza
-            {
-                pointCounter.playerPoints++;
-                ball.xPosition=400;
-                ball.yPosition=random(0,height)
-            }
-        
-        if(this.xPosition <0) //Punkt dla gracza
+        if(this.xPosition>width) //Punkt dla komputera
             {
                 pointCounter.computerPoints++;
                 ball.xPosition=400;
                 ball.yPosition=random(0,height)
+                pointSound.play();
             }
-         if(this.xPosition==paddle1.xPosition && (this.yPosition<=paddle1.yPosition+40 && this.yPosition>=paddle1.yPosition)) //Odbijanie od 1 paletki
+        
+        if(this.xPosition <0) //Punkt dla gracza
+            {
+                pointCounter.playerPoints++;
+                ball.xPosition=400;
+                ball.yPosition=random(0,height)
+                pointSound.play();
+            }
+         if(this.xPosition==paddle1.xPosition && (this.yPosition<=paddle1.yPosition+41 && this.yPosition>=paddle1.yPosition-1)) //Odbijanie od 1 paletki
              {
+                 bounceSound.play();
                  this.xSpeed*=-1;
              }
-        if(this.xPosition==paddle2.xPosition && (this.yPosition<=paddle2.yPosition+40 && this.yPosition>=paddle2.yPosition)) //Odbijanie od 2 paletki
+        if(this.xPosition==paddle2.xPosition && (this.yPosition<=paddle2.yPosition+41 && this.yPosition>=paddle2.yPosition-1)) //Odbijanie od 2 paletki
              {
+                 bounceSound.play();
                  this.xSpeed*=-1;
              }
     }
@@ -59,11 +69,19 @@ var paddle1 = {
     
      move : function()
     {
+        if(ball.xPosition<=400)
+            {
+                this.speed=4;
+            }
+        else
+            {
+               this.speed=2;
+            }
         if(ball.yPosition>this.yPosition)
             {
                 this.yPosition+=this.speed;
             }
-        else if (ball.yPosition<this.yPosition)
+        if (ball.yPosition<this.yPosition)
             {
                 this.yPosition-=this.speed;
             }
@@ -102,14 +120,19 @@ showPoint : function()
     {
         textSize(72);
         fill(255);
-        text(this.playerPoints,300,100);
-        text(this.computerPoints,472,100);
+        if(loosePlayer==false && looseComputer==false)
+            {
+                text(this.playerPoints,472,100);
+                text(this.computerPoints,300,100);
+            }
     }
 };
 
 function setup()
 {
     createCanvas(800,600);
+     bounceSound = loadSound('sound/bounce.wav');
+     pointSound = loadSound('sound/point.wav');
 }
 
 function draw()
@@ -123,7 +146,6 @@ function draw()
       }
     
     strokeWeight(4);
-    
     ball.display();
     ball.move();
     ball.bounce();
@@ -138,6 +160,64 @@ function draw()
     pointCounter.showPoint();
     
     
-
+    if(pointCounter.playerPoints>=10) //Wygrana gracza
+        {
+            ball.xPosition = 200;
+            ball.yPosition = 400;
+            ball.xSpeed = 0;
+            ball.ySpeed = 0;
+            looseComputer=true;
+            playerP=pointCounter.playerPoints;
+            computerP=pointCounter.computerPoints;
+            pointCounter.playerPoints=0;
+            pointCounter.computerPoints=0;
+            setTimeout(Restart, 3000);
+        }
+    if(pointCounter.computerPoints>=10) //Wygrana komputera
+        {
+            ball.xPosition = 200;
+            ball.yPosition = 400;
+            ball.xSpeed = 0;
+            ball.ySpeed = 0;
+            loosePlayer=true;
+            playerP=pointCounter.playerPoints;
+            computerP=pointCounter.computerPoints;
+            pointCounter.playerPoints=0;
+            pointCounter.computerPoints=0;
+            setTimeout(Restart, 3000);
+        }
     
+    if(looseComputer)
+        {
+            text("You win!",270,200);
+             text(playerP,472,100);
+             text(computerP,300,100);
+           
+        }
+    if(loosePlayer)
+        {
+            text("You lose!",270,200);
+             text(playerP,472,100);
+             text(computerP,300,100);
+               
+        }
 }
+
+function Restart()
+{
+    loosePlayer=false;
+    looseComputer=false;
+    ball.xSpeed = 5;
+    ball.ySpeed = 5;
+}
+
+
+ /*if((this.xPosition<=paddle1.xPosition && this.xPosition>=45) && (this.yPosition<=paddle1.yPosition+41 && this.yPosition>=paddle1.yPosition-1)) //Odbijanie od 1 paletki
+             {
+                 this.xSpeed*=-1;
+             }
+        if((this.xPosition>=paddle2.xPosition && this.xPosition<=755) && (this.yPosition<=paddle2.yPosition+41 && this.yPosition>=paddle2.yPosition-1)) //Odbijanie od 2 paletki
+             {
+                 this.xSpeed*=-1;
+             }
+             */
